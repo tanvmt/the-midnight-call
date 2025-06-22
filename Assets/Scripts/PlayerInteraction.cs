@@ -4,8 +4,13 @@ using UnityEngine.InputSystem;
 public class PlayerInteraction : MonoBehaviour
 {
     public float interactionDistance = 3f;
-
     public Camera playerCamera;
+    private PlayerInventory playerInventory;
+
+    void Start()
+    {
+        playerInventory = GetComponentInParent<PlayerInventory>();
+    }
 
     void Update()
     {
@@ -20,6 +25,21 @@ public class PlayerInteraction : MonoBehaviour
                 if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
                 {
                     Debug.Log("Interacting with: " + hitInfo.collider.name);
+
+                    KeyItem keyItem = hitInfo.collider.GetComponent<KeyItem>();
+                    if (keyItem != null)
+                    {
+                        playerInventory.AddKey(keyItem.keyId);
+                        Destroy(hitInfo.collider.gameObject);
+                        return;
+                    }
+
+                    DoorController door = hitInfo.collider.GetComponent<DoorController>();
+
+                    if (door != null)
+                    {
+                        door.Interact(playerInventory);
+                    }
                 }
             }
         }
