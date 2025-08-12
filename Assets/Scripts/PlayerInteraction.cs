@@ -6,10 +6,13 @@ public class PlayerInteraction : MonoBehaviour
     public float interactionDistance = 3f;
     public Camera playerCamera;
     private PlayerInventory playerInventory;
+    private VehicleManager vehicle;
 
     void Start()
     {
-        playerInventory = GetComponentInParent<PlayerInventory>();
+        playerInventory = FindFirstObjectByType<PlayerInventory>();
+        vehicle = FindFirstObjectByType<VehicleManager>();
+
     }
 
     void Update()
@@ -19,27 +22,40 @@ public class PlayerInteraction : MonoBehaviour
 
         if (Physics.Raycast(ray, out hitInfo, interactionDistance))
         {
-            Debug.Log("Hit: " + hitInfo.collider.name);
-            if(hitInfo.collider.CompareTag("Interactable"))
+            if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
             {
-                if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
-                {
-                    Debug.Log("Interacting with: " + hitInfo.collider.name);
+                Debug.Log("Interacting with: " + hitInfo.collider.name);
 
-                    KeyItem keyItem = hitInfo.collider.GetComponent<KeyItem>();
-                    if (keyItem != null)
+                if (hitInfo.collider.CompareTag("PlayerCar"))
+                {
+                    if (vehicle != null)
                     {
-                        playerInventory.AddKey(keyItem.keyId);
-                        Destroy(hitInfo.collider.gameObject);
+                        vehicle.EnterCar();
                         return;
                     }
+                }
 
-                    DoorController door = hitInfo.collider.GetComponent<DoorController>();
+                KeyItem keyItem = hitInfo.collider.GetComponent<KeyItem>();
+                if (keyItem != null)
+                {
+                    Debug.Log($"Key {keyItem.keyId} collected.");
+                    playerInventory.AddKey(keyItem.keyId);
+                    Destroy(hitInfo.collider.gameObject);
+                    return;
+                }
 
-                    if (door != null)
-                    {
-                        door.Interact(playerInventory);
-                    }
+                DoorController door = hitInfo.collider.GetComponent<DoorController>();
+                if (door != null)
+                {
+                    door.Interact(playerInventory);
+                    return;
+                }
+
+                BedInteraction bed = hitInfo.collider.GetComponent<BedInteraction>();
+                if (bed != null)
+                {
+                    bed.OnInteract();
+                    return;
                 }
             }
         }

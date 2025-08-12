@@ -9,7 +9,8 @@ public class DoorController : MonoBehaviour
     public string requiredKeyId = "";
 
     private bool isOpen = false;
-    public Quaternion initialRotation;
+    public bool IsOpen { get { return isOpen; } }
+    public Quaternion initialLocalRotation;
     public float openAngle = 90f;
 
     public float animationTime = 1f;
@@ -17,7 +18,7 @@ public class DoorController : MonoBehaviour
 
     void Start()
     {
-        initialRotation = transform.rotation;
+        initialLocalRotation = transform.localRotation;
     }
 
     public void Interact(PlayerInventory playerInventory)
@@ -48,16 +49,16 @@ public class DoorController : MonoBehaviour
     {
         isAnimating = true;
 
-        Quaternion startRotation = transform.rotation;
+        Quaternion startRotation = transform.localRotation;
         Quaternion endRotation;
 
         if (isOpen)
         {
-            endRotation = initialRotation * Quaternion.Euler(0, openAngle, 0);
+            endRotation = initialLocalRotation * Quaternion.Euler(0, openAngle, 0);
         }
         else
         {
-            endRotation = initialRotation;
+            endRotation = initialLocalRotation;
         }
 
         float elapesedTime = 0f;
@@ -66,11 +67,11 @@ public class DoorController : MonoBehaviour
             elapesedTime += Time.deltaTime;
             float t = elapesedTime / animationTime;
 
-            transform.rotation = Quaternion.Slerp(startRotation, endRotation, t);
+            transform.localRotation = Quaternion.Slerp(startRotation, endRotation, t);
             yield return null;
         }
 
-        transform.rotation = endRotation; 
+        transform.localRotation = endRotation; 
         isAnimating = false;
     }
 }
